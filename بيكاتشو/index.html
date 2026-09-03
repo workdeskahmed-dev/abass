@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>مفاجأة أديان</title>
+  <style>
+    :root{
+      --white:#ffffff;
+      --soft-pink:#ffd9e6;
+      --deep-pink:#e0447b;
+      --lavender:#efe6fb;
+      --dark-pink:#a5215a;
+      --ink:#4a2038;
+    }
+
+    *{box-sizing:border-box;}
+
+    html, body{
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background: radial-gradient(circle at 20% 20%, var(--lavender), var(--soft-pink) 45%, #ffc4dc 100%);
+      font-family: Georgia, 'Times New Roman', 'Noto Naskh Arabic', serif;
+      color: var(--ink);
+    }
+
+    #app{
+      position:relative;
+      width:100vw;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+
+    .heart-field{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .heart{
+      position:absolute;
+      bottom:-10vh;
+      opacity:0.55;
+      filter: drop-shadow(0 0 6px rgba(224,68,123,0.35));
+      animation: floatUp linear infinite;
+    }
+
+    .heart svg{ width:100%; height:100%; display:block; }
+
+    @keyframes floatUp{
+      0%{ transform: translateY(0) translateX(0) rotate(0deg) scale(var(--s,1)); opacity:0; }
+      10%{ opacity:0.6; }
+      90%{ opacity:0.5; }
+      100%{ transform: translateY(-115vh) translateX(var(--drift,20px)) rotate(20deg) scale(var(--s,1)); opacity:0; }
+    }
+
+    .glow-particle{
+      position:absolute;
+      border-radius:50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,214,232,0));
+      filter: blur(1px);
+      animation: floatUp linear infinite;
+    }
+
+    .scene-wrap{
+      position:relative;
+      z-index:2;
+      width:min(92vw, 480px);
+      max-height:92vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:22px;
+      padding:34px 26px;
+      border-radius:32px;
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border:1px solid rgba(255,255,255,0.55);
+      box-shadow:
+        0 25px 60px -15px rgba(165,33,90,0.35),
+        0 0 0 1px rgba(255,255,255,0.25) inset;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--deep-pink) rgba(255,255,255,0.2);
+    }
+
+    .scene-wrap::-webkit-scrollbar {
+      width: 4px;
+    }
+    .scene-wrap::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+    }
+    .scene-wrap::-webkit-scrollbar-thumb {
+      background: var(--deep-pink);
+      border-radius: 8px;
+    }
+
+    .scene{
+      display:none;
+      width:100%;
+      flex-direction:column;
+      align-items:center;
+      gap:20px;
+    }
+
+    .scene.active{
+      display:flex;
+      animation: sceneIn 0.7s cubic-bezier(.22,1,.36,1);
+    }
+
+    @keyframes sceneIn{
+      from{ opacity:0; transform: translateY(18px) scale(0.96); }
+      to{ opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    .scene.leaving{
+      animation: sceneOut 0.45s cubic-bezier(.55,0,1,.45) forwards;
+    }
+
+    @keyframes sceneOut{
+      from{ opacity:1; transform: translateY(0) scale(1); }
+      to{ opacity:0; transform: translateY(-14px) scale(0.94); }
+    }
+
+    .img-card{
+      position:relative;
+      width:min(62vw, 260px);
+      aspect-ratio: 1 / 1;
+      border-radius:26px;
+      overflow:hidden;
+      background: linear-gradient(155deg, var(--white), var(--lavender));
+      box-shadow:
+        0 18px 40px -12px rgba(165,33,90,0.45),
+        0 0 0 6px rgba(255,255,255,0.6),
+        0 0 0 7px rgba(224,68,123,0.25);
+      animation: floatCard 5s ease-in-out infinite;
+      flex-shrink:0;
+    }
+
+    @keyframes floatCard{
+      0%, 100%{ transform: translateY(0); }
+      50%{ transform: translateY(-8px); }
+    }
+
+    .img-card img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      object-position: center;
+      display:block;
+    }
+
+    .img-card::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:26px;
+      box-shadow: inset 0 0 30px rgba(255,255,255,0.35);
+      pointer-events:none;
+    }
+
+    .scene-text{
+      font-size: clamp(20px, 5vw, 26px);
+      line-height:1.6;
+      text-align:center;
+      color: var(--dark-pink);
+      text-shadow: 0 2px 12px rgba(255,255,255,0.6);
+      opacity:0;
+      animation: textIn 0.6s ease forwards 0.25s;
+    }
+
+    @keyframes textIn{
+      from{ opacity:0; transform: translateY(8px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    .pink-btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      font-family: inherit;
+      font-size: clamp(16px, 4vw, 19px);
+      font-weight:600;
+      color:#fff;
+      padding: 14px 38px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--deep-pink), var(--dark-pink));
+      box-shadow:
+        0 12px 24px -8px rgba(165,33,90,0.55),
+        0 0 0 1px rgba(255,255,255,0.25) inset;
+      opacity:0;
+      transform: translateY(10px);
+      animation: btnIn 0.6s ease forwards 0.6s;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .pink-btn:hover{
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 16px 30px -8px rgba(165,33,90,0.65);
+    }
+
+    .pink-btn:active{ transform: translateY(0) scale(0.98); }
+
+    @keyframes btnIn{
+      from{ opacity:0; transform: translateY(10px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    .message-box{
+      font-size: clamp(17px, 4.4vw, 21px);
+      line-height:2;
+      text-align:center;
+      color: var(--ink);
+      background: rgba(255,255,255,0.5);
+      border-radius:20px;
+      padding: 22px 20px;
+      box-shadow: 0 10px 30px -10px rgba(165,33,90,0.3);
+      font-style: normal;
+      white-space: pre-line;
+      opacity:0;
+      animation: textIn 0.8s ease forwards 0.4s;
+    }
+
+    .signature{
+      display:block;
+      margin-top:14px;
+      font-size: 0.85em;
+      color: var(--dark-pink);
+      font-weight:600;
+    }
+
+    .final-area{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      margin-top: 4px;
+    }
+
+    .hand-pointer{
+      font-size: 34px;
+      animation: pointBounce 1.3s ease-in-out infinite;
+      transform-origin:center;
+    }
+
+    @keyframes pointBounce{
+      0%, 100%{ transform: translateY(0) rotate(0deg); }
+      50%{ transform: translateY(8px) rotate(-8deg); }
+    }
+
+    .final-btn{
+      font-size: clamp(17px, 4.6vw, 21px);
+      padding: 16px 34px;
+      animation: btnIn 0.6s ease forwards 0.2s, pulseGlow 2.2s ease-in-out infinite 0.8s;
+    }
+
+    @keyframes pulseGlow{
+      0%, 100%{ box-shadow: 0 12px 24px -8px rgba(165,33,90,0.55); }
+      50%{ box-shadow: 0 12px 32px -4px rgba(224,68,123,0.85); }
+    }
+
+    .player{
+      display:none;
+      width:100%;
+      flex-direction:column;
+      align-items:center;
+      gap:16px;
+      margin-top: 6px;
+      padding-bottom: 8px;
+    }
+
+    .player.active{ display:flex; }
+
+    .visualizer{
+      display:flex;
+      align-items:flex-end;
+      gap:5px;
+      height:44px;
+    }
+
+    .visualizer span{
+      width:6px;
+      border-radius:4px;
+      background: linear-gradient(180deg, var(--deep-pink), var(--dark-pink));
+      height:10px;
+      animation: bar 1s ease-in-out infinite;
+    }
+
+    .visualizer span:nth-child(1){ animation-delay: 0s; }
+    .visualizer span:nth-child(2){ animation-delay: 0.12s; }
+    .visualizer span:nth-child(3){ animation-delay: 0.24s; }
+    .visualizer span:nth-child(4){ animation-delay: 0.36s; }
+    .visualizer span:nth-child(5){ animation-delay: 0.18s; }
+    .visualizer span:nth-child(6){ animation-delay: 0.3s; }
+    .visualizer span:nth-child(7){ animation-delay: 0.06s; }
+
+    @keyframes bar{
+      0%, 100%{ height:8px; }
+      50%{ height:40px; }
+    }
+
+    .visualizer.paused span{ animation-play-state: paused; height:8px; }
+
+    .now-playing{
+      font-size:15px;
+      color: var(--dark-pink);
+      letter-spacing:0.3px;
+    }
+
+    @media (max-height: 640px){
+      .scene-wrap{ gap:14px; padding:22px 18px; }
+      .img-card{ width:38vw; }
+    }
+
+    /* make scene 6 content scrollable but keep button area at top */
+    .scene[data-scene="6"] {
+      gap: 16px;
+    }
+    .scene[data-scene="6"] .img-card {
+      margin-top: 4px;
+    }
+    .scene[data-scene="6"] .message-box {
+      max-height: 30vh;
+      overflow-y: auto;
+      padding: 18px 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--deep-pink) rgba(255,255,255,0.2);
+      width: 100%;
+    }
+    .scene[data-scene="6"] .message-box::-webkit-scrollbar {
+      width: 3px;
+    }
+    .scene[data-scene="6"] .message-box::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+    }
+    .scene[data-scene="6"] .message-box::-webkit-scrollbar-thumb {
+      background: var(--deep-pink);
+      border-radius: 8px;
+    }
+
+    .final-area {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .player {
+      flex-shrink: 0;
+    }
+
+    /* make the whole scene wrap scrollable when content overflows */
+    .scene-wrap {
+      overflow-y: auto;
+      justify-content: flex-start;
+      padding-top: 28px;
+      padding-bottom: 28px;
+    }
+
+    .scene.active {
+      justify-content: flex-start;
+    }
+
+    /* ensure the last scene content is centered but scrollable */
+    .scene[data-scene="6"] {
+      justify-content: flex-start;
+      padding-bottom: 12px;
+    }
+
+    /* small screens: adjust */
+    @media (max-height: 700px) {
+      .scene[data-scene="6"] .message-box {
+        max-height: 22vh;
+        font-size: clamp(15px, 3.8vw, 18px);
+        padding: 14px 12px;
+      }
+      .scene-wrap {
+        padding: 20px 16px;
+        gap: 16px;
+      }
+      .img-card {
+        width: min(50vw, 180px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div class="heart-field" id="heartField"></div>
+
+  <div class="scene-wrap" id="sceneWrap">
+
+    <!-- SCENE 1 -->
+    <section class="scene active" data-scene="1">
+      <div class="img-card"><img src="images/1.png" alt=""></div>
+      <p class="scene-text">Hello أديان ❤️</p>
+      <button class="pink-btn" data-next="2">Hello</button>
+    </section>
+
+    <!-- SCENE 2 -->
+    <section class="scene" data-scene="2">
+      <div class="img-card"><img src="images/2.png" alt=""></div>
+      <p class="scene-text">أديان،  عادي أسألج سؤال؟</p>
+      <button class="pink-btn" data-next="3">ممم... إيه</button>
+    </section>
+
+    <!-- SCENE 3 -->
+    <section class="scene" data-scene="3">
+      <div class="img-card"><img src="images/3.png" alt=""></div>
+      <p class="scene-text">تحبين عباس؟ ❤️</p>
+      <button class="pink-btn" data-next="4">ممم...</button>
+    </section>
+
+    <!-- SCENE 4 -->
+    <section class="scene" data-scene="4">
+      <div class="img-card"><img src="images/4.png" alt=""></div>
+      <p class="scene-text">شنو اممم؟ جاوبي 😭❤️</p>
+      <button class="pink-btn" data-next="5">إيه أحبك ❤️</button>
+    </section>
+
+    <!-- SCENE 5 -->
+    <section class="scene" data-scene="5">
+      <div class="img-card"><img src="images/5.png" alt=""></div>
+      <p class="scene-text">ابتسمي، خلي اخذلج صورة ❤️</p>
+      <button class="pink-btn" data-next="6"> يلا 😂❤️</button>
+    </section>
+
+    <!-- MESSAGE SCENE -->
+    <section class="scene" data-scene="6">
+      <div class="img-card"><img src="images/6.png" alt=""></div>
+
+      
+<div class="message-box">شكرًا لأنچ كنتِ وياي بكل حالاتي، تحملتيني بوقت تعبي وقهري وحزني، وفرحتي وياي بأيام فرحي.
+
+شكرًا لأنچ ما تركتيني بوقت كنت بيه أصعب شخص ممكن أحد يتحمله، وبقيتي سند إليّ حتى وأنا ما أعرف شلون أعبّر عن اللي بداخلي.
+
+يمكن هالهدية بسيطة، بس وراها حب كبير وامتنان أكبر، لأن وجودچ بحياتي مو شي عادي، إنتِ نعمة أحمد الله عليها كل يوم.
+
+أوعدچ مهما مرت علينا أيام، أبقى أقدّر كل لحظة صبرتي بيها عليّ، وكل مرة وقفتي وياي، وكل مرة حسستيني إني مو وحدي.
+
+أحبچ مو بس بأيام الفرح، أحبچ بكل حالاتي، وأحبچ لأنچ كنتِ وياي بكل حالاتي.
+
+الله لا يحرمني منچ، وتبقين دائمًا أجمل جزء بحياتي.
+
+هاي الهدية إلچ، بس قلبي كله أصلًا إلچ.
+
+<span class="signature">من عباس ❤️</span></div>
+```
+
+      <div class="final-area" id="finalArea">
+        <div class="hand-pointer">👇</div>
+        <button class="pink-btn final-btn" id="finalBtn">اسمعي اغنيتج المفضلة</button>
+      </div>
+
+      <div class="player" id="player">
+        <div class="visualizer" id="visualizer">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p class="now-playing">🎵 اغنيتج تشتغل</p>
+        <audio id="audio" src="audio/a.mp3" controls style="width:100%; max-width:280px;"></audio>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<audio id="audioPreload" preload="none" style="display:none;"></audio>
+
+<script>
+(function(){
+  "use strict";
+
+  var scenes = Array.prototype.slice.call(document.querySelectorAll('.scene'));
+  var wrap = document.getElementById('sceneWrap');
+
+  function goTo(sceneNum){
+    var current = document.querySelector('.scene.active');
+    var next = document.querySelector('.scene[data-scene="' + sceneNum + '"]');
+    if(!next || next === current) return;
+
+    if(current){
+      current.classList.add('leaving');
+      current.classList.remove('active');
+      setTimeout(function(){
+        current.classList.remove('leaving');
+      }, 450);
+    }
+
+    setTimeout(function(){
+      next.classList.add('active');
+      // scroll to top of the wrap when scene changes
+      wrap.scrollTop = 0;
+    }, current ? 200 : 0);
+  }
+
+  scenes.forEach(function(scene){
+    var btn = scene.querySelector('.pink-btn[data-next]');
+    if(btn){
+      btn.addEventListener('click', function(){
+        goTo(btn.getAttribute('data-next'));
+      });
+    }
+  });
+
+  // ---------- final button: play audio ----------
+  var finalBtn = document.getElementById('finalBtn');
+  var finalArea = document.getElementById('finalArea');
+  var player = document.getElementById('player');
+  var audio = document.getElementById('audio');
+  var visualizer = document.getElementById('visualizer');
+
+  finalBtn.addEventListener('click', function(){
+    finalArea.style.display = 'none';
+    player.classList.add('active');
+    audio.play().catch(function(){ /* wait for user control if autoplay blocked */ });
+    visualizer.classList.remove('paused');
+    // keep scroll at top after player appears
+    setTimeout(function(){
+      wrap.scrollTop = 0;
+    }, 50);
+  });
+
+  audio.addEventListener('pause', function(){
+    visualizer.classList.add('paused');
+  });
+  audio.addEventListener('play', function(){
+    visualizer.classList.remove('paused');
+  });
+
+  // ---------- floating hearts background ----------
+  var heartField = document.getElementById('heartField');
+  var heartSVG = '<svg viewBox="0 0 32 29" xmlns="http://www.w3.org/2000/svg">' +
+    '<path fill="currentColor" d="M23.6 0c-3 0-5.9 1.6-7.6 4.1C14.3 1.6 11.4 0 8.4 0 3.8 0 0 3.8 0 8.6c0 8.5 9.4 13 16 20.4 6.6-7.4 16-11.9 16-20.4C32 3.8 28.2 0 23.6 0z"/>' +
+    '</svg>';
+
+  var heartCount = 16;
+  for(var i=0;i<heartCount;i++){
+    var el = document.createElement('div');
+    el.className = 'heart';
+    var size = 10 + Math.random()*22;
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.left = (Math.random()*96) + 'vw';
+    el.style.color = Math.random() > 0.5 ? '#e0447b' : '#ffb6d1';
+    el.style.setProperty('--s', (0.7 + Math.random()*0.8).toFixed(2));
+    el.style.setProperty('--drift', (Math.random()*80 - 40) + 'px');
+    var dur = 9 + Math.random()*10;
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = (Math.random()*dur) + 's';
+    el.innerHTML = heartSVG;
+    heartField.appendChild(el);
+  }
+
+  var glowCount = 14;
+  for(var j=0;j<glowCount;j++){
+    var g = document.createElement('div');
+    g.className = 'glow-particle';
+    var gs = 4 + Math.random()*8;
+    g.style.width = gs + 'px';
+    g.style.height = gs + 'px';
+    g.style.left = (Math.random()*96) + 'vw';
+    g.style.setProperty('--s', (0.6 + Math.random()*0.7).toFixed(2));
+    g.style.setProperty('--drift', (Math.random()*60 - 30) + 'px');
+    var gdur = 8 + Math.random()*9;
+    g.style.animationDuration = gdur + 's';
+    g.style.animationDelay = (Math.random()*gdur) + 's';
+    heartField.appendChild(g);
+  }
+
+  // ensure the wrap starts at top for scene 6
+  setTimeout(function(){
+    if(document.querySelector('.scene.active[data-scene="6"]')){
+      wrap.scrollTop = 0;
+    }
+  }, 100);
+
+})();
+</script>
+</body>
+</html>
